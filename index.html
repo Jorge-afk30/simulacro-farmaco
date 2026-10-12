@@ -1,1 +1,909 @@
-k
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Evaluación: Farmacología</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e3a8a;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border: #e2e8f0;
+            --success: #059669;
+            --success-bg: #d1fae5;
+            --error: #dc2626;
+            --error-bg: #fee2e2;
+            --warning: #ea580c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            color: var(--text-main); 
+            padding: 20px; 
+            line-height: 1.6; 
+            margin: 0;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; padding-bottom: 50px;}
+        
+        /* Cabecera principal */
+        .header { 
+            text-align: center; 
+            margin-bottom: 40px; 
+            padding: 40px 20px; 
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary)); 
+            color: white;
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3); 
+        }
+        .header h1 { margin: 0 0 10px 0; font-size: 2.4em; font-weight: 800; letter-spacing: -0.5px;}
+        .header p { margin: 0; font-size: 1.1em; opacity: 0.9; font-weight: 500;}
+
+        /* SEPARADOR DE SEMANAS (Módulos) */
+        .module-section {
+            margin-bottom: 50px;
+            background: transparent;
+        }
+        .module-title {
+            background: var(--text-main);
+            color: white;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 1.4em;
+            font-weight: 800;
+            margin-bottom: 25px;
+            display: inline-block;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border-left: 5px solid var(--primary);
+        }
+
+        /* Tarjetas de Preguntas */
+        .question-card { 
+            background: var(--card-bg); 
+            padding: 35px; 
+            border-radius: 16px; 
+            margin-bottom: 25px; 
+            border: 1px solid var(--border); 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        .question-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+        
+        .question-number { 
+            font-size: 0.85em; 
+            color: var(--primary); 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px; 
+            margin-bottom: 15px; 
+            display: block; 
+        }
+        
+        .question-title { 
+            font-size: 1.2em; 
+            font-weight: 700; 
+            margin-bottom: 25px; 
+            color: var(--text-main); 
+        }
+        
+        /* Opciones */
+        .options { display: flex; flex-direction: column; gap: 12px; }
+        .options input[type="radio"] { display: none; }
+        
+        .option-label { 
+            display: flex; 
+            align-items: center; 
+            padding: 16px 20px; 
+            border: 2px solid var(--border); 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            font-weight: 500; 
+            font-size: 1em; 
+            color: var(--text-muted); 
+            background-color: var(--card-bg);
+        }
+        .option-label:hover { border-color: #93c5fd; background-color: #f8fafc; color: var(--text-main);}
+        
+        .options input[type="radio"]:checked + .option-label { 
+            border-color: var(--primary); 
+            background-color: #eff6ff; 
+            color: var(--primary-dark); 
+            box-shadow: 0 0 0 1px var(--primary); 
+            font-weight: 700; 
+        }
+        
+        /* Botones */
+        .btn { 
+            display: block; 
+            width: 100%; 
+            padding: 20px; 
+            font-size: 1.2em; 
+            font-weight: 700; 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            text-align: center; 
+            margin-top: 30px;
+        }
+        .btn-submit { background-color: var(--primary); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3); }
+        .btn-submit:hover { background-color: var(--primary-dark); transform: translateY(-2px);}
+        .btn-submit:active { transform: translateY(0); }
+        
+        .btn-retry { background-color: var(--warning); margin-top: 20px; box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.3);}
+        .btn-retry:hover { background-color: #c2410c; }
+        
+        .btn-pdf { background-color: var(--text-main); margin-top: 40px; }
+        .btn-pdf:hover { background-color: #000; }
+
+        /* Feedback / Explicaciones */
+        .feedback { margin-top: 25px; padding: 25px; border-radius: 12px; display: none; font-size: 0.95em; line-height: 1.6; animation: fadeIn 0.5s;}
+        .feedback.correct { background-color: var(--success-bg); border-left: 6px solid var(--success); color: #064e3b; }
+        .feedback.incorrect { background-color: var(--error-bg); border-left: 6px solid var(--error); color: #7f1d1d; }
+        
+        .feedback-title { font-weight: 800; font-size: 1.15em; margin-bottom: 12px; display: block; }
+        .feedback-explanation { display: block; margin-top: 15px; font-style: normal; background: rgba(255,255,255,0.6); padding: 15px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); color: var(--text-main);}
+        .feedback-deep { display: block; margin-top: 12px; font-style: normal; background: #e0f2fe; padding: 15px; border-radius: 8px; border: 1px solid #bae6fd; color: #0369a1;}
+
+        /* Dashboard */
+        #dashboard { display: none; margin-top: 60px; padding: 50px; background: white; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border-top: 8px solid var(--primary); animation: slideUp 0.6s ease-out; }
+        .dashboard-header { text-align: center; margin-bottom: 40px; }
+        .dashboard-header h2 { font-size: 2.2em; color: var(--text-main); margin: 0; font-weight: 800;}
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; margin-bottom: 40px; }
+        
+        .chart-container { display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        .circular-chart { width: 180px; height: 180px; border-radius: 50%; background: conic-gradient(var(--success) calc(var(--percentage) * 1%), var(--error) 0); display: flex; justify-content: center; align-items: center; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.05);}
+        .circular-chart::before { content: ""; position: absolute; width: 140px; height: 140px; background-color: white; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .chart-percentage { position: relative; font-size: 2.5em; font-weight: 900; color: var(--text-main); z-index: 1; }
+        
+        .stat-boxes { display: flex; flex-direction: column; gap: 20px; }
+        .stat-box { padding: 25px; border-radius: 12px; font-size: 1.2em; font-weight: 700; display: flex; justify-content: space-between; align-items: center;}
+        .stat-correct { background-color: var(--success-bg); color: var(--success); border: 1px solid #6ee7b7; }
+        .stat-incorrect { background-color: var(--error-bg); color: var(--error); border: 1px solid #fca5a5; }
+        .stat-number { font-size: 1.6em; font-weight: 900;}
+
+        .recommendations { background-color: #fffbeb; border: 1px solid #fde68a; padding: 30px; border-radius: 12px; margin-top: 30px; }
+        .recommendations h3 { color: #b45309; margin-top: 0; font-weight: 800; font-size: 1.3em;}
+        .recommendations ul { margin: 0; padding-left: 20px; color: #92400e; font-weight: 500; line-height: 1.8;}
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @media (max-width: 600px) { .stats-grid { grid-template-columns: 1fr; } .stat-box { padding: 15px; } .module-title { font-size: 1.2em; }}
+
+        /* ESTILOS PARA PDF */
+        #print-area { display: none; }
+        @media print {
+            body { background: white; padding: 0; margin: 0; font-family: Arial, sans-serif;}
+            .container { display: none !important; }
+            #print-area { display: block !important; padding: 20px; }
+            .print-header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; }
+            .print-header h1 { font-size: 22pt; margin: 0; color: #1e3a8a;}
+            .print-section { margin-bottom: 30px; }
+            .print-section h2 { font-size: 16pt; margin-bottom: 15px; border-bottom: 2px solid #ccc; padding-bottom: 5px; color: #0f172a;}
+            .print-card { border: 1px solid #ccc; border-radius: 8px; padding: 15px; margin-bottom: 20px; page-break-inside: avoid;}
+            .print-q { font-size: 12pt; font-weight: bold; margin-bottom: 10px; color: #000;}
+            .print-ans { font-size: 11pt; margin-bottom: 5px; }
+            .print-box-ppt { background: #f8fafc !important; border-left: 4px solid #64748b !important; padding: 10px; margin-top: 10px; font-size: 10pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-box-deep { background: #f0f9ff !important; border-left: 4px solid #0284c7 !important; padding: 10px; margin-top: 8px; font-size: 10pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Simulacro Oficial: Terapéutica</h1>
+        <p>50 preguntas clínicas estructuradas por módulos semanales de estudio.</p>
+    </div>
+    
+    <!-- El formulario donde se inyectarán las preguntas divididas por módulos -->
+    <form id="quiz-form"></form>
+    
+    <button type="button" class="btn btn-submit" id="btn-submit" onclick="evaluateQuiz()">Terminar Módulos y Evaluar</button>
+
+    <div id="dashboard">
+        <div class="dashboard-header">
+            <h2>Reporte de Rendimiento Académico</h2>
+            <p style="color: var(--text-muted); font-size: 1.1em;">Análisis algorítmico de tus resultados.</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="chart-container">
+                <div class="circular-chart" id="circular-chart" style="--percentage: 0;">
+                    <span class="chart-percentage" id="chart-text">0%</span>
+                </div>
+                <h3 style="margin-top: 20px; color: var(--text-main); font-size: 1.1em; font-weight: 700;">Precisión Total</h3>
+            </div>
+            
+            <div class="stat-boxes">
+                <div class="stat-box stat-correct">
+                    <span>✅ Aciertos</span>
+                    <span class="stat-number" id="stat-correct">0</span>
+                </div>
+                <div class="stat-box stat-incorrect">
+                    <span>❌ Errores</span>
+                    <span class="stat-number" id="stat-incorrect">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="recommendations" id="recommendations-box">
+            <h3>⚠️ Puntos de Mejora Detectados</h3>
+            <p>El sistema ha detectado que debes estudiar más sobre los siguientes temas de tus PPTs:</p>
+            <ul id="study-topics"></ul>
+        </div>
+
+        <button type="button" class="btn btn-pdf" onclick="downloadPDF()">📥 Exportar Reporte de Errores a PDF</button>
+        <button type="button" class="btn btn-retry" onclick="retryQuiz()">🔄 Limpiar Respuestas y Reintentar (Mismo Orden)</button>
+    </div>
+</div>
+
+<div id="print-area"></div>
+
+<script>
+// BASE DE DATOS EXACTA: 50 PREGUNTAS CON ATRIBUTO 'WEEK'
+const quizData = [
+    // --- SEMANA 1: FARMACOQUÍMICA BÁSICA ---
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Electronegatividad",
+        q: "Si un elemento tiene una electronegatividad débil y pierde electrones en una reacción química, este proceso se denomina:",
+        options: { a: "Oxidación.", b: "Reducción.", c: "Alquilación.", d: "Desmetilación.", e: "Saturación." },
+        answer: "a",
+        explanation: "En la diapositiva de 'Clasificación de Átomos' se especifica literalmente: 'Electronegatividad débil pierde electrones: Oxidación'.",
+        deep_dive: "El metabolismo de fase 1 hepático usa procesos de oxidación (mediados por el Citocromo P450) para hacer que los fármacos liposolubles sean más polares perdiendo electrones."
+    },
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Elementos Organógenos",
+        q: "El carbono es un elemento organógeno fundamental para los fármacos, el cual se caracteriza químicamente por ser:",
+        options: { a: "Divalente y oxidante.", b: "Trivalente y formador de bases.", c: "Monovalente.", d: "Tetravalente y autosaturante.", e: "Inerte con 8 electrones." },
+        answer: "d",
+        explanation: "El PPT de 'Elemento Organógeno' lista al Carbono con las propiedades clave: 'Tetravalente, Autosaturante, Cadena Carbonada, Peso 12 daltons'.",
+        deep_dive: "La tetravalencia del carbono le permite formar hasta 4 enlaces covalentes fuertes creando esqueletos tridimensionales esenciales para el acoplamiento fármaco-receptor."
+    },
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Estereoquímica",
+        q: "Cuando un fármaco comercial es una mezcla equimolecular exacta de sus enantiómeros L (levógiro) y R (dextrógira), se le denomina químicamente:",
+        options: { a: "Isómero cis-trans.", b: "Compuesto alicíclico.", c: "Racemato.", d: "Compuesto saturado.", e: "Anhídrido." },
+        answer: "c",
+        explanation: "En la lámina de 'Clasificación de Carbono', se define al Racemato como la 'Mezcla equimolecular de L y R'.",
+        deep_dive: "La mayoría de fármacos se producen como mezclas racémicas. A menudo solo un enantiómero tiene el efecto terapéutico (eutómero), mientras el otro es inactivo o tóxico (distómero)."
+    },
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Metabolismo de alcanos",
+        q: "El proceso metabólico por el cual la Adrenalina pierde un grupo metilo para convertirse en Noradrenalina, requiriendo que se le anteponga el prefijo 'nor', se denomina:",
+        options: { a: "Alquilación.", b: "Desalquilación.", c: "Desmetilación.", d: "Oxidación de primer grado.", e: "Reducción." },
+        answer: "c",
+        explanation: "La diapositiva sobre metabolismo indica claramente: 'Desmetilación: nor. Si una molécula pierde un grupo metilo, a su nombre se la antepone: nor'.",
+        deep_dive: "El prefijo 'nor-' significa 'Nitrógeno ohne Radikal' (nitrógeno sin radical en alemán), es decir, la pérdida de un grupo metilo en un átomo de nitrógeno."
+    },
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Anillos Heterocíclicos",
+        q: "En la nomenclatura farmacológica de anillos heterocíclicos, el prefijo utilizado cuando la estructura presenta un átomo de nitrógeno (N) es:",
+        options: { a: "Tia.", b: "Oxa.", c: "Aza.", d: "Ina.", e: "Ol." },
+        answer: "c",
+        explanation: "El PPT establece la regla de prefijos: S (azufre) = tia, O (oxígeno) = oxa, N (nitrógeno) = aza.",
+        deep_dive: "Conocer estos sufijos de la IUPAC ayuda a deducir la estructura de un fármaco solo leyendo su nombre genérico. Ejemplo: benzodiAZEPina."
+    },
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Anillos Heterocíclicos",
+        q: "Los anillos heterocíclicos compuestos por 7 átomos en su estructura, muy comunes en fármacos ansiolíticos, reciben el sufijo:",
+        options: { a: "-ol.", b: "-ina.", c: "-epina.", d: "-ano.", e: "-eno." },
+        answer: "c",
+        explanation: "Según la regla de sufijos del PPT por número de átomos: '5 = ol, 6 = ina, 7 = epina'. De ahí derivan nombres como diazepina.",
+        deep_dive: "Las benzodiacepinas están constituidas estructuralmente por la fusión de un anillo de benceno y un anillo heterocíclico de 7 miembros que contiene dos nitrógenos."
+    },
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Oxidación",
+        q: "La oxidación en PRIMER grado del carbono con oxígeno da como resultado un grupo químico denominado:",
+        options: { a: "Cetona.", b: "Aldehído.", c: "Amina.", d: "Ácido carboxílico.", e: "Alcohol (Oxidrilo)." },
+        answer: "e",
+        explanation: "La lámina 'Alcohol' lo define textualmente: 'Hidrocarburo con grupo Oxidrilo (OH), resultado de la oxidación en primer grado del carbono con oxigeno'.",
+        deep_dive: "El metabolismo oxidativo añade un grupo hidroxilo (-OH) a las moléculas lipofílicas, facilitando que el fármaco luego se conjugue y sea eliminado por los riñones."
+    },
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Oxidación",
+        q: "La oxidación en TERCER grado de un carbono primario con el oxígeno da como resultado la formación de un:",
+        options: { a: "Nitrilo.", b: "Cetona secundaria.", c: "Ácido Carboxílico.", d: "Alcohol terciario.", e: "Anhídrido." },
+        answer: "c",
+        explanation: "El PPT 'Ácido Carboxílico' indica que es el 'resultado de la oxidación en tercer grado, del carbono primario con el oxígeno'.",
+        deep_dive: "Los grupos carboxílicos (COOH) le otorgan a los fármacos propiedades ácidas, determinando su grado de ionización en el estómago o intestino."
+    },
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Enlaces",
+        q: "En farmacología, ¿cómo se denomina al enlace químico que une un resto ácido con un resto alcohólico por un puente oxígeno, con liberación de agua?",
+        options: { a: "Enlace peptídico.", b: "Enlace éter.", c: "Lactona.", d: "Enlace Éster.", e: "Enlace anhídrido." },
+        answer: "d",
+        explanation: "La diapositiva del 'Ester' detalla la reacción: 'Resto ácido unido a resto alcohólico por puente oxigeno... Su síntesis libera agua, por lo cual son hidrolizables'.",
+        deep_dive: "Los fármacos tipo éster (como la procaína) son inestables en plasma porque son rápidamente hidrolizados por enzimas plasmáticas, dándoles una vida media corta."
+    },
+    {
+        week: "Módulo 1: Farmacoquímica Básica", topic: "Ácidos Nucleicos",
+        q: "En la estructura molecular del ADN y ARN, el grupo fosfato se une a la pentosa a través de un enlace tipo:",
+        options: { a: "Éter.", b: "Éster.", c: "Anhídrido.", d: "Glucosídico.", e: "Peptídico." },
+        answer: "b",
+        explanation: "En los esquemas de 'Nucleótido' de las diapositivas, se señala que la unión entre el Grupo Fosfato y el carbono de la pentosa es un enlace 'ÉSTER'.",
+        deep_dive: "Fármacos antivirales y antineoplásicos actúan como análogos de nucleósidos, engañando a las polimerasas para que intenten formar este enlace, interrumpiendo el ADN."
+    },
+
+    // --- SEMANA 4: FÁRMACOS ADRENÉRGICOS ---
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Receptores Alfa",
+        q: "El receptor Alfa-1 adrenérgico está acoplado a la proteína Gq. Su estimulación directa en el músculo liso vascular produce:",
+        options: { a: "Vasodilatación masiva.", b: "Relajación generalizada.", c: "Inotropismo negativo.", d: "Contracción (vasoconstricción).", e: "Glucogenólisis hepática intensa." },
+        answer: "d",
+        explanation: "El esquema de 'Efecto alfa-adrenérgico' indica literalmente que la estimulación del receptor alfa-1 en el 'Músculo Liso Vascular (Piel)' produce 'Contracción'.",
+        deep_dive: "Al activar la proteína Gq, se estimula la Fosfolipasa C, generando IP3 y liberación de Calcio, causando la contracción de la capa media vascular."
+    },
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Receptores Beta",
+        q: "A nivel cardíaco, la estimulación farmacológica de los receptores adrenérgicos Beta-1 tiene como efecto fundamental:",
+        options: { a: "Inotropismo y cronotropismo negativo.", b: "Relajación de las coronarias.", c: "Inotropismo y cronotropismo positivo.", d: "Inhibición de la liberación de noradrenalina.", e: "Vasoconstricción sistémica." },
+        answer: "c",
+        explanation: "El cuadro de 'Efecto beta-adrenérgico' estipula para el receptor Beta-1 en el Corazón: 'Inotropismo Positivo' y 'Cronotropismo Positivo'.",
+        deep_dive: "Aumentan el AMPc, lo que fosforila los canales de calcio permitiendo mayor entrada de calcio (efecto inotrópico) y acelera la despolarización (efecto cronotrópico)."
+    },
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Receptores Beta",
+        q: "El receptor adrenérgico responsable de inducir la lipólisis en el tejido adiposo es el:",
+        options: { a: "Alfa 1.", b: "Alfa 2.", c: "Beta 1.", d: "Beta 2.", e: "Beta 3." },
+        answer: "e",
+        explanation: "La diapositiva sobre el efecto beta-adrenérgico muestra claramente al receptor 'Beta 3' apuntando al 'Tejido Adiposo' con el efecto de 'Lipólisis'.",
+        deep_dive: "Los agonistas B3 (como el mirabegrón) también relajan el músculo detrusor y se usan actualmente para la vejiga hiperactiva, además de sus efectos lipolíticos."
+    },
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Receptores Beta",
+        q: "La estimulación del receptor Beta-2 adrenérgico en el músculo liso bronquial tiene como efecto principal la:",
+        options: { a: "Contracción severa.", b: "Hipersecreción de moco.", c: "Relajación (Broncodilatación).", d: "Despolarización muscular.", e: "Vasoconstricción pulmonar." },
+        answer: "c",
+        explanation: "La flecha de la subunidad 'Beta 2' en el PPT apunta a 'Músculo Liso Bronquial' indicando su efecto: 'Relajación'.",
+        deep_dive: "En el músculo liso bronquial, el aumento de AMPc inactiva a la enzima MLCK, lo que imposibilita la contracción muscular, resultando en broncodilatación."
+    },
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Agonistas Selectivos",
+        q: "¿Qué fármaco es considerado un agonista simpaticomimético selectivo del receptor Beta-2, muy útil en crisis de asma?",
+        options: { a: "Fenilefrina.", b: "Clonidina.", c: "Albuterol (Salbutamol).", d: "Isoproterenol.", e: "Propanolol." },
+        answer: "c",
+        explanation: "En la lámina de 'Agonista Beta', el Albuterol (Salbutamol) figura expresamente en el listado de 'Beta 2 - Selectivo'.",
+        deep_dive: "Otorga alta selectividad por el receptor B2 sobre el B1, permitiendo tratar el broncoespasmo asmático sin provocar taquicardias severas en el corazón."
+    },
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Antagonistas",
+        q: "¿Qué fármaco actúa clínicamente como antagonista simpaticolítico selectivo bloqueando el receptor Alfa-1?",
+        options: { a: "Fenoxibenzamina.", b: "Prazocina.", c: "Propanolol.", d: "Atenolol.", e: "Metoxamina." },
+        answer: "b",
+        explanation: "La diapositiva de 'Antagonista alfa-bloqueador' ubica a la 'Prazocina' directamente bajo la categoría 'Selectivo: Alfa-1'.",
+        deep_dive: "La prazosina es un antihipertensivo que relaja arterias y venas. Además relaja el músculo liso prostático, siendo muy útil para tratar la Hiperplasia Prostática Benigna (HPB)."
+    },
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Antagonistas",
+        q: "El propanolol, muy usado en medicina, pertenece a la familia farmacológica de los:",
+        options: { a: "Agonistas Beta 1 selectivos.", b: "Antagonistas Beta No Selectivos.", c: "Antagonistas Alfa no selectivos.", d: "Agonistas Alfa 2 selectivos.", e: "Bloqueadores neuromusculares." },
+        answer: "b",
+        explanation: "En el cuadro de 'Beta-bloqueador', el Propanolol es el primer fármaco en la lista que se bifurca desde 'No Selectivo'.",
+        deep_dive: "Bloquea B1 y B2 (pudiendo causar broncoespasmo en asmáticos). Es altamente lipofílico, cruzando la barrera hematoencefálica, lo que explica su utilidad para migrañas y temblores."
+    },
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Metabolismo",
+        q: "El metabolismo degradativo fisiológico de las catecolaminas es mediado por dos enzimas claves:",
+        options: { a: "Acetilcolinesterasa y Butirilcolinesterasa.", b: "Catecol Orto Metil Transferasa (COMT) y Monoaminooxidasa (MAO).", c: "Fosfolipasa A2 y C.", d: "Fosfodiesterasa cíclica.", e: "Ciclooxigenasa 1 y 2." },
+        answer: "b",
+        explanation: "La lámina 'Sinapsis Sistema Simpático' identifica explícitamente a los metabolizadores como 'Catecol Orto Metil Transferasa (COMT) y Monoaminooxidasa (MAO)'.",
+        deep_dive: "Ambas enzimas son blancos terapéuticos en enfermedades como el Parkinson, donde se administran inhibidores (selegilina, entacapona) para evitar la destrucción de la dopamina."
+    },
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Receptores Alfa",
+        q: "Un efecto fisiológico clásico de la activación del receptor Alfa-2 en la membrana de la terminal nerviosa presináptica es:",
+        options: { a: "Aumento brusco de la liberación de noradrenalina.", b: "Inhibición de la liberación de noradrenalina.", c: "Agregación plaquetaria inmediata.", d: "Aumento de la secreción de insulina.", e: "Glucogenólisis hepática." },
+        answer: "b",
+        explanation: "En la sección de Efectos Alfa-adrenérgicos, el receptor 'Alfa 2' actuando sobre la 'Terminal Nerviosa' tiene como función: 'Inhibe Liberación de NA'.",
+        deep_dive: "El receptor Alfa-2 funciona como un 'autorreceptor de freno'. Cuando hay demasiada noradrenalina en la sinapsis, estimula al Alfa-2 presináptico, el cual detiene la exocitosis."
+    },
+    {
+        week: "Módulo 2: Fármacos Adrenérgicos", topic: "Antagonistas",
+        q: "De la siguiente lista, ¿cuál es clasificado como un antagonista Beta-1 SELECTIVO (cardioselectivo)?",
+        options: { a: "Pindolol.", b: "Carvedilol.", c: "Labetalol.", d: "Atenolol.", e: "Nadolol." },
+        answer: "d",
+        explanation: "En la diapositiva 'Beta-bloqueador', dentro de la categoría 'Selectivo - Beta 1', se enumera claramente al 'Atenolol'.",
+        deep_dive: "Los fármacos cardioselectivos bloquean preferentemente los receptores B1 del corazón, siendo mucho más seguros en pacientes hipertensos que también sufren de EPOC o asma."
+    },
+
+    // --- SEMANA 5: FÁRMACOS COLINÉRGICOS ---
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Receptores",
+        q: "En el sistema parasimpático, la transmisión de señales hacia las vísceras ocurre mediante un receptor metabotrópico que se denomina:",
+        options: { a: "Nicotínico.", b: "Adrenérgico.", c: "Muscarínico.", d: "Ionotrópico de Cloro.", e: "Receptor NMDA." },
+        answer: "c",
+        explanation: "La diapositiva de 'SISTEMA NERVIOSO PARASIMPATICO' establece el título entre paréntesis '(Muscarínico)' y la lámina de ligando aclara 'Muscarínico (Metabotropico)'.",
+        deep_dive: "El sistema parasimpático usa receptores nicotínicos rápidos en el ganglio, pero en el órgano diana final usa receptores muscarínicos lentos acoplados a proteínas G."
+    },
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Efectos Muscarínicos",
+        q: "A nivel del músculo liso bronquial, la estimulación del receptor muscarínico M3 produce fisiológicamente:",
+        options: { a: "Contracción (Broncoespasmo).", b: "Relajación masiva.", c: "Inotropismo negativo.", d: "Broncodilatación directa.", e: "Reducción de secreciones." },
+        answer: "a",
+        explanation: "El cuadro de 'Efectos Muscarínicos' indica para el receptor M3 que, en el músculo liso bronquial, la respuesta es la 'Contracción'.",
+        deep_dive: "El receptor M3 activa la fosfolipasa C liberando calcio, provocando contracción. Por eso en crisis de asma se administran antagonistas muscarínicos como el bromuro de ipratropio."
+    },
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Efectos Muscarínicos",
+        q: "El receptor muscarínico M2 predominante en el tejido cardíaco, al ser estimulado por el nervio vago (acetilcolina), produce:",
+        options: { a: "Inotropismo y dromotropismo positivo.", b: "Taquicardia refleja.", c: "Inotropismo, cronotropismo y dromotropismo negativo.", d: "Aumento masivo del gasto cardíaco.", e: "Relajación vascular coronaria directa." },
+        answer: "c",
+        explanation: "La gráfica de la subunidad M2 conectada al 'Corazón' muestra explícitamente tres resultados: 'Inotropismo Negativo, Cronotropismo negativo, Dromotropismo negativo'.",
+        deep_dive: "Acoplado a Gi, el M2 disminuye el AMPc e hiperpolariza la célula abriendo canales de potasio (K+). Esto reduce la fuerza y la frecuencia cardíaca."
+    },
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Agonistas",
+        q: "Identifique el fármaco agonista muscarínico clasificado como 'Éster de colina' que posee alta selectividad por los receptores M3 (usado para la atonía de vejiga):",
+        options: { a: "Pilocarpina.", b: "Arecolina.", c: "Atropina.", d: "Betanecol.", e: "Edrofonio." },
+        answer: "d",
+        explanation: "En la tabla de Agonistas Muscarínicos, la categoría 'Ester de Colina' muestra al Betanecol con un perfil de receptor exclusivamente 'M3'.",
+        deep_dive: "El betanecol es resistente a la hidrólisis y no cruza la barrera hematoencefálica. Es excelente para reactivar el vaciado de vejiga tras cirugías sin afectar el corazón (M2)."
+    },
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Antagonistas",
+        q: "Principal representante de los Antagonistas Muscarínicos de origen natural, con estructura de amina terciaria, capaz de cruzar la barrera hematoencefálica:",
+        options: { a: "Ipatropio.", b: "Atropina.", c: "Pirenzepina.", d: "Neostigmina.", e: "Succinilcolina." },
+        answer: "b",
+        explanation: "El cuadro de Antagonistas Muscarínicos lista como Naturales (N-Terciario) a la 'Atropina y Escopolamina'. Las aminas terciarias cruzan el SNC.",
+        deep_dive: "Extraída de la Atropa belladonna, la atropina es el antídoto universal para el envenenamiento por insecticidas organofosforados, revirtiendo la bradicardia y la hipersecreción letal."
+    },
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Anticolinesterasa",
+        q: "Existen fármacos que inhiben a la enzima que destruye la acetilcolina. El grupo de 'Inhibidores Carbamato' incluye a:",
+        options: { a: "Edrofonio y Tacrina.", b: "Insecticidas organofosforados.", c: "Fisostigmina y Neostigmina.", d: "Prazocina y Doxazocina.", e: "Atropina y Escopolamina." },
+        answer: "c",
+        explanation: "La diapositiva sobre 'Anticolinesterasa' clasifica al 'Inhibidor Carbamato' conteniendo a la Fisostigmina, Neostigmina y Piridostigmina.",
+        deep_dive: "Los carbamatos forman un enlace covalente reversible con la enzima acetilcolinesterasa que dura algunas horas. Se usan clínicamente para tratar la Miastenia Gravis."
+    },
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Enzimas",
+        q: "La Butirilcolinesterasa (o seudocolinesterasa) se diferencia de la acetilcolinesterasa porque se localiza principalmente en:",
+        options: { a: "La membrana postsináptica de la unión neuromuscular.", b: "Las células de la glía y meninges.", c: "Hígado y presente circulando en el plasma.", d: "Los núcleos del rafe del SNC.", e: "La corteza motora cerebral exclusivamente." },
+        answer: "c",
+        explanation: "La lámina comparativa de Colinesterasa define a la Butirilcolinesterasa indicando: 'Elaborada en el hígado y presente en el plasma'.",
+        deep_dive: "Esta enzima plasmática es crucial en anestesiología porque es la encargada de destruir la succinilcolina. Pacientes con déficit genético de seudocolinesterasa sufren parálisis prolongada."
+    },
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Receptor Nicotínico",
+        q: "El receptor colinérgico nicotínico de la placa motora muscular (NM) es un canal iónico que estructuralmente está conformado por:",
+        options: { a: "3 subunidades alfa.", b: "4 hélices de transmembrana exclusivas.", c: "5 subunidades formando un pentámero.", d: "7 hélices transmembrana acopladas a proteína G.", e: "Un monómero simple intracelular." },
+        answer: "c",
+        explanation: "El PPT dice literalmente: 'Receptor colinérgico NICOTÍNICO: Canal iónico con 5 subunidades'. Y muestra el pentámero formado por alfa, beta, gamma, delta, épsilon.",
+        deep_dive: "Para que el poro se abra y permita la entrada masiva de Na+, deben unirse dos moléculas de acetilcolina (una a cada subunidad alfa del pentámero)."
+    },
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Bloqueadores",
+        q: "Los bloqueadores neuromusculares no despolarizantes son usados en cirugía. La D-tubocurarina y el Atracurio pertenecen a la familia química de:",
+        options: { a: "Aminas terciarias alcaloides.", b: "Benzil-isoquinolinas.", c: "Amino-esteroides sintéticos.", d: "Carbamatos organofosforados.", e: "Agonistas nicotínicos despolarizantes." },
+        answer: "b",
+        explanation: "La lámina ilustrada con estructuras grandes rojas titula 'BENZIL-ISOQUINOLINA' y enumera debajo al Atracurio, Mivacurio y Doxacurio.",
+        deep_dive: "El Atracurio tiene una ventaja clínica inmensa: se degrada espontáneamente en el plasma sanguíneo (Eliminación de Hofmann) sin requerir riñones ni hígado."
+    },
+    {
+        week: "Módulo 3: Fármacos Colinérgicos", topic: "Bloqueadores",
+        q: "El Vecuronio y el Rocuronio son bloqueadores neuromusculares clasificados por su estructura química como:",
+        options: { a: "Ésteres de colina.", b: "Benzil-isoquinolinas.", c: "Amino-esteroides.", d: "Agonistas inversos GABAérgicos.", e: "Inhibidores colinesterásicos." },
+        answer: "c",
+        explanation: "La diapositiva con el recuadro amarillo 'AMINO-ESTEROIDE' lista visualmente las estructuras del Pancuronio, Vecuronio y Rocuronio.",
+        deep_dive: "Los aminoesteroides como el Rocuronio tienen el inicio de acción más rápido, permitiendo intubaciones de secuencia rápida. Pueden ser revertidos usando Sugammadex."
+    },
+
+    // --- SEMANA 6: FÁRMACOS ANESTÉSICOS ---
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Fisiología SNC",
+        q: "En el Sistema Nervioso Central, el neurotransmisor EXCITADOR primario encargado de mantener el nivel de conciencia mediante receptores AMPA y NMDA es:",
+        options: { a: "Ácido Gamma Aminobutírico (GABA).", b: "Glicina endógena.", c: "Glutamato.", d: "Serotonina (5-HT).", e: "Noradrenalina periférica." },
+        answer: "c",
+        explanation: "El PPT establece bajo 'Neurotransmisión excitadora' al 'Glutamato' apuntando a receptores AMPA, KAINATO y NMDA.",
+        deep_dive: "Los anestésicos generales (como la ketamina o el óxido nitroso) deprimen la conciencia al antagonizar sus receptores, específicamente el NMDA."
+    },
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Mecanismo de Acción",
+        q: "El mecanismo de acción molecular primario de anestésicos endovenosos como el Propofol y el Tiopental es:",
+        options: { a: "Bloquear los receptores NMDA de glutamato.", b: "Inhibir competitivamente la Glicina.", c: "Potenciar la transmisión represora vía receptor GABAA.", d: "Actuar como agonista muscarínico M1.", e: "Acelerar la acetilcolinesterasa." },
+        answer: "c",
+        explanation: "En la lámina 'MECANISMO DE ACCION', se vincula directamente al Etomidato, Propofol y Barbitúricos a los receptores 'GABAA Y GABAergicos'.",
+        deep_dive: "Se unen alostéricamente al receptor GABAA, prolongando el tiempo que el canal de cloro permanece abierto. La entrada de aniones de cloro hiperpolariza las neuronas corticales, apagando el cerebro."
+    },
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Ketamina",
+        q: "La Ketamina es un anestésico general disociativo cuyo mecanismo de acción a nivel neuronal es:",
+        options: { a: "Actuar como superagonista del receptor GABAA.", b: "Antagonizar el glutamato bloqueando el receptor NMDA.", c: "Bloquear irreversiblemente canales de sodio.", d: "Estimular el receptor muscarínico cerebral.", e: "Inhibir la enzima Monoaminooxidasa." },
+        answer: "b",
+        explanation: "El esquema de mecanismo de acción de anestésicos endovenosos etiqueta explícitamente a la Ketamina como: 'Antiglutamato NMDA'.",
+        deep_dive: "Produce un estado de 'anestesia disociativa': el paciente parece despierto (ojos abiertos), pero está completamente desconectado del entorno y sin sentir dolor."
+    },
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Endovenosos",
+        q: "En pacientes inestables, se prefiere usar Etomidato porque se diferencia del Propofol al caracterizarse por mantener:",
+        options: { a: "Una gran liberación de histamina.", b: "Severa hipotensión arterial y taquicardia.", c: "La normotensión (pero disminuye el nivel de cortisol).", d: "Alucinaciones visuales persistentes.", e: "Una ventilación paradójicamente aumentada." },
+        answer: "c",
+        explanation: "La tabla comparativa señala que el Etomidato provee 'Normotensión', a diferencia de la hipotensión del Propofol. Su efecto adverso es que '↓ Cortisol'.",
+        deep_dive: "Inhibe reversiblemente la enzima 11-beta-hidroxilasa adrenal, suprimiendo la producción de cortisol entre 8 a 24 horas, lo que debe vigilarse en pacientes críticos."
+    },
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Inhalatorios",
+        q: "En anestésicos inhalatorios, el concepto que determina la potencia del gas se denomina MAC, que significa:",
+        options: { a: "Máxima Absorción Cerebral.", b: "Metabolismo Alveolar Central.", c: "Medio Anestésico Constante.", d: "Concentración Alveolar Mínima.", e: "Mínima Acción Cardíaca." },
+        answer: "d",
+        explanation: "La lámina 'ANESTESIA GENERAL INHALATORIA' define textual: 'MAC: concentración alveolar mínima, para alcanzar determinado nivel'.",
+        deep_dive: "Es la concentración del gas en los alvéolos a 1 atm que impide el movimiento en el 50% de los pacientes ante la incisión quirúrgica. A menor MAC, más potente es el anestésico."
+    },
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Inhalatorios",
+        q: "El anestésico Halotano ha caído en desuso porque al metabolizarse en el hígado por el CYP2E1 puede causar severa:",
+        options: { a: "Alucinación psiquiátrica irreversible.", b: "Necrosis hepática fulminante.", c: "Nefrotoxicidad terminal.", d: "Fibrosis pulmonar.", e: "Hipotermia extrema." },
+        answer: "b",
+        explanation: "El cuadro de farmacocinética del Halotano es claro: '30% metaboliza el CYP2E1 en hígado... Puede causar: necrosis hepática'.",
+        deep_dive: "El metabolismo oxidativo del halotano forma ácido trifluoroacético (TFA), el cual se une covalentemente a proteínas hepáticas formando neoantígenos que el sistema inmune ataca."
+    },
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Inhalatorios",
+        q: "El Sevoflurano es excelente, pero reacciona con la sosa cáustica de la máquina de anestesia formando el 'Compuesto A', asociado con:",
+        options: { a: "Necrosis hepática.", b: "Insuficiencia respiratoria.", c: "Nefrotoxicidad.", d: "Hemorragia gástrica.", e: "Toxicidad retiniana." },
+        answer: "c",
+        explanation: "La lámina de farmacocinética del Sevoflurano menciona: 'Reacción con sosa caústica: compuesto A' y lo asocia a 'Nefrotoxicidad por compuesto A'.",
+        deep_dive: "El sevoflurano interactúa con bases fuertes deshidratadas formando el Compuesto A (un éter fluorado) que es nefrotóxico en modelos animales y se evita usando flujos altos de gas fresco."
+    },
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Anestésicos Locales",
+        q: "El mecanismo de acción a nivel celular de los Anestésicos Locales es unirse de forma reversible bloqueando a los:",
+        options: { a: "Receptores NMDA postsinápticos.", b: "Canales de Calcio (Ca++) en el músculo liso.", c: "Segmentos S6 de los canales de Sodio (Na+) voltaje dependientes.", d: "Canales de Potasio en el nodo sinusal.", e: "Receptores GABAA en la corteza cerebral." },
+        answer: "c",
+        explanation: "La diapositiva los define como: 'Fármacos que se unen de forma reversible al S6 de los canales de Na voltaje dependiente en los nervios y bloquean el movimiento de iones'.",
+        deep_dive: "Al bloquear el canal de sodio desde el lado INTRACELULAR, impiden que el sodio entre a la neurona, bloqueando la fase 0 del potencial de acción. El impulso doloroso jamás viaja al cerebro."
+    },
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Anestésicos Locales",
+        q: "Químicamente, los anestésicos locales constan de un resto hidrófilo y uno hidrófobo. ¿Qué tipos de enlace los conectan?",
+        options: { a: "Exclusivamente puentes de hidrógeno.", b: "Enlaces de éster o amida.", c: "Cadenas de alcanos y alquenos.", d: "Uniones fosfodiéster.", e: "Enlaces peptídicos y disulfuro." },
+        answer: "b",
+        explanation: "La lámina 'ESTRUCTURA QUÍMICA DE ANESTÉSICO LOCAL' indica textualmente: 'Tienen restos hidrófilos e hidrófobos separados por un enlace de éster o amida'.",
+        deep_dive: "Esta clasificación es vital en emergencias alergológicas. Los pacientes suelen ser alérgicos a los Ésteres. Si es así, se debe usar una amida (lidocaína), ya que no hay reactividad cruzada."
+    },
+    {
+        week: "Módulo 4: Fármacos Anestésicos", topic: "Anestésicos Locales",
+        q: "La Lidocaína (anestésico amida) es metabolizada en el hígado para formar MEGX principalmente por el citocromo:",
+        options: { a: "CYP3A4.", b: "CYP2E1.", c: "CYP1A2.", d: "CYP2D9.", e: "CYP2B6." },
+        answer: "c",
+        explanation: "El cuadro de 'METABOLISMO DE LA LIDOCAINA' señala el paso hacia Monoetil glicina xilidida (MEGX) mediado específicamente por la enzima 'CYP1A2'.",
+        deep_dive: "Se degrada rápidamente en el hígado en metabolitos activos que, en sobredosis prolongadas, pueden acumularse y causar toxicidad severa del SNC (convulsiones)."
+    },
+
+    // --- SEMANA 7: PSICOFÁRMACOS ---
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Sistema Límbico",
+        q: "Según la anatomía del sistema límbico, la estructura encargada de regular las emociones instintivas y automatizar la respuesta de miedo es:",
+        options: { a: "La corteza motora primaria.", b: "El tálamo anterior.", c: "La Amígdala cerebral.", d: "El cerebelo.", e: "El bulbo olfatorio." },
+        answer: "c",
+        explanation: "En la definición de ansiedad del PPT, se menciona: 'Respuesta automática... Hiperactividad activa la amígdala. Amígdala ordena que se segreguen adrenalina...'.",
+        deep_dive: "La amígdala identifica amenazas en milisegundos y dispara el eje hipotálamo-hipófisis-adrenal, preparando al cuerpo para luchar o huir antes de que seamos conscientes."
+    },
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Ansiedad",
+        q: "En un trastorno de ansiedad, existe una hiperactividad en el núcleo del tronco encefálico llamado Locus Cerúleos, el cual secreta:",
+        options: { a: "Dopamina.", b: "Serotonina.", c: "Noradrenalina (NA).", d: "Acetilcolina.", e: "Glicina." },
+        answer: "c",
+        explanation: "La lámina de Ansiedad es explícita: 'Hiperactividad en Locus Cerúleos: secreta NA (Noradrenalina) y activa la amígdala'.",
+        deep_dive: "El Locus Coeruleus es la principal fábrica de noradrenalina del cerebro. La hiperactivación crónica de esta vía mantiene al paciente en un estado de vigilia y alerta constante."
+    },
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Ansiolíticos",
+        q: "Las Benzodiacepinas logran su potente efecto ansiolítico al unirse a qué zona del receptor GABA-A:",
+        options: { a: "Dentro del poro del canal iónico de sodio.", b: "En la interfase entre la subunidad Alfa y Beta.", c: "En la interfase entre la subunidad Alfa y Gamma.", d: "Directamente en el sitio del glutamato.", e: "En el sitio intracelular de la proteína G." },
+        answer: "c",
+        explanation: "El gráfico del PPT 'Mecanismo de Acción de Benzodiacepinas' muestra que el fármaco 'Se une a interfase alfa y gamma' del receptor GABAA.",
+        deep_dive: "Son moduladores alostéricos positivos: cambian la forma del receptor para que, cuando el GABA natural se una, el canal de cloro se abra con mucha más frecuencia."
+    },
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Farmacocinética",
+        q: "El Zolpidem, usado para inducir el sueño, se clasifica como de semivida:",
+        options: { a: "Intermedia (Menor de 24 horas).", b: "Prolongada (Mayor de 24 horas).", c: "Breve (Menor de 6 horas).", d: "Ultrabreve (Menor de 3 horas).", e: "Larga (Mayor de 72 horas)." },
+        answer: "d",
+        explanation: "La diapositiva indica en la sección Semivida: 'Ultrabreve: Menor de 3 horas (zolpidem)'.",
+        deep_dive: "Los hipnóticos como el Zolpidem se crearon para tener vidas medias ultra cortas. El paciente duerme inmediatamente pero despierta al día siguiente sin 'resaca'."
+    },
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Depresión",
+        q: "La fisiopatología bioquímica de la Depresión postula que los pacientes sufren de un déficit de tres neurotransmisores fundamentales:",
+        options: { a: "GABA, Glicina y Glutamato.", b: "Noradrenalina, Serotonina y Dopamina.", c: "Oxitocina, Prolactina y Melatonina.", d: "Sustancia P, Histamina y Acetilcolina.", e: "Adrenalina, Histamina y Encefalina." },
+        answer: "b",
+        explanation: "La lámina 'DEPRESIÓN' indica en su título principal: 'Déficit relativo de noradrenalina, serotonina y dopamina'.",
+        deep_dive: "La hipótesis de las monoaminas postula que la tristeza profunda, la anhedonia y la falta de energía surgen por la depleción sináptica de estas tres aminas biógenas."
+    },
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Antidepresivos",
+        q: "La Fenelzina y Selegilina pertenecen a la familia de antidepresivos denominados:",
+        options: { a: "Inhibidores de la Recaptación de Serotonina.", b: "Antidepresivos Tricíclicos (ATC).", c: "Inhibidor de la MAO (Monoaminooxidasa).", d: "Antipsicóticos Atípicos.", e: "Reversibles de la Fosfodiesterasa." },
+        answer: "c",
+        explanation: "La diapositiva titula 'Antidepresivos: Inhibidor de la MAO' e incluye dentro de los 'Irreversibles' a la Fenelzina (hidracina) y a la Selegilina.",
+        deep_dive: "Los IMAO irreversibles unen sus átomos covalentemente a la enzima destruyéndola. Son de último recurso por interacciones letales con alimentos ricos en tiramina."
+    },
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Antidepresivos",
+        q: "Los antidepresivos de primera línea mundial por su seguridad son los ISRS (SSRI). ¿Qué fármacos pertenecen a esta familia?",
+        options: { a: "Amitriptilina y Desipramina.", b: "Fenelzina y Pargilina.", c: "Fluoxetina, Sertralina y Paroxetina.", d: "Haloperidol y Clozapina.", e: "Diazepam y Alprazolam." },
+        answer: "c",
+        explanation: "La lámina de 'INHIBIDORES DE LA RECAPTACION DE SEROTONINA (SSRI)' lista directamente a: 'Fluoxetina, Fluvoxamina, Paroxetina, Sertralina...'.",
+        deep_dive: "Los ISRS bloquean específicamente el transportador SERT, impidiendo que la serotonina vuelva a la neurona, lo que aumenta su presencia en el espacio extracelular."
+    },
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Psicosis",
+        q: "Tradicionalmente, se ha aceptado que la sintomatología de la Psicosis severa es causada por anomalías en las vías mediadas por:",
+        options: { a: "GABA.", b: "Serotonina.", c: "Noradrenalina.", d: "Dopamina.", e: "Glicina." },
+        answer: "d",
+        explanation: "El PPT de 'PSICOSIS' declara: 'Tradicionalmente se ha aceptado la teoría dopaminergica como base' y muestra el gráfico de las 'Vías dopaminérgicas'.",
+        deep_dive: "La esquizofrenia tiene síntomas Positivos (alucinaciones), producidos por un exceso de dopamina en la vía Mesolímbica; y Negativos, causados por un déficit en la vía Mesocortical."
+    },
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Antipsicóticos",
+        q: "Los antipsicóticos típicos de la familia Fenotiazinas (como Clorpromazina), tienen como mecanismo principal de acción ser potentes:",
+        options: { a: "Agonistas dopaminérgicos del receptor D1.", b: "Antagonistas del receptor de dopamina (D2).", c: "Inhibidores de la recaptación de serotonina.", d: "Agonistas GABAA puros.", e: "Bloqueadores neuromusculares." },
+        answer: "b",
+        explanation: "La lámina de 'ANTIPSICÓTICOS TRICICLICOS' lista a las Fenotiazinas y remarca claramente abajo su principal mecanismo clínico: 'Antidopamina (D2)'.",
+        deep_dive: "El bloqueo fuerte e inespecífico de los receptores D2 en el cerebro detiene las alucinaciones, pero causa Síntomas Extrapiramidales (como Parkinsonismo)."
+    },
+    {
+        week: "Módulo 5: Psicofármacos", topic: "Antipsicóticos",
+        q: "Para evitar los severos efectos motores de los fármacos antiguos, se inventaron los Antipsicóticos 'Atípicos'. Un ejemplo de esta familia moderna es la:",
+        options: { a: "Clorpromazina.", b: "Tioridazina.", c: "Risperidona (y Clozapina, Quetiapina).", d: "Trifluoperazina.", e: "Imipramina." },
+        answer: "c",
+        explanation: "La diapositiva final de 'ANTIPSICÓTICOS ATÍPICOS' menciona directamente a fármacos revolucionarios como 'Clozapina, Quetiapína y Risperidona'.",
+        deep_dive: "Los atípicos no solo bloquean la Dopamina (D2) levemente, sino que también actúan como potentes antagonistas de Serotonina (5-HT2A), reduciendo radicalmente los efectos secundarios motores."
+    }
+];
+
+let currentQuizData = [];
+let topicErrorsGlobal = {};
+let wrongAnswersGlobal = [];
+
+function initQuiz() {
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("btn-submit").style.display = "block";
+    
+    topicErrorsGlobal = {};
+    wrongAnswersGlobal = [];
+    
+    // El orden es ESTRICTO. No se desordena.
+    currentQuizData = [...quizData];
+    
+    const form = document.getElementById("quiz-form");
+    form.innerHTML = ""; 
+
+    let currentWeekContainer = null;
+    let currentWeekName = "";
+
+    currentQuizData.forEach((item, index) => {
+        
+        // Crear Separador de Módulo si cambió la semana
+        if (item.week !== currentWeekName) {
+            currentWeekName = item.week;
+            
+            currentWeekContainer = document.createElement("div");
+            currentWeekContainer.className = "module-section";
+            
+            const weekTitle = document.createElement("div");
+            weekTitle.className = "module-title";
+            weekTitle.innerText = currentWeekName;
+            currentWeekContainer.appendChild(weekTitle);
+            
+            form.appendChild(currentWeekContainer);
+        }
+
+        // Crear la tarjeta de la pregunta
+        const questionBlock = document.createElement("div");
+        questionBlock.className = "question-card";
+        questionBlock.id = `question-${index}`;
+
+        const qNumber = document.createElement("span");
+        qNumber.className = "question-number";
+        qNumber.innerText = `Pregunta ${index + 1} de 50`;
+        questionBlock.appendChild(qNumber);
+
+        const questionTitle = document.createElement("div");
+        questionTitle.className = "question-title";
+        questionTitle.innerText = item.q;
+        questionBlock.appendChild(questionTitle);
+
+        const optionsDiv = document.createElement("div");
+        optionsDiv.className = "options";
+
+        for (const [key, value] of Object.entries(item.options)) {
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.name = `q${index}`;
+            input.value = key;
+            input.id = `q${index}_${key}`;
+
+            const label = document.createElement("label");
+            label.className = "option-label";
+            label.setAttribute("for", input.id);
+            label.innerText = `${key.toUpperCase()}) ${value}`;
+
+            optionsDiv.appendChild(input);
+            optionsDiv.appendChild(label);
+        }
+        questionBlock.appendChild(optionsDiv);
+
+        const feedbackDiv = document.createElement("div");
+        feedbackDiv.className = "feedback";
+        feedbackDiv.id = `feedback-${index}`;
+        questionBlock.appendChild(feedbackDiv);
+
+        // Añadir la pregunta dentro del contenedor del módulo correspondiente
+        currentWeekContainer.appendChild(questionBlock);
+    });
+}
+
+function evaluateQuiz() {
+    let score = 0;
+    let incorrects = 0;
+    let unanswered = false;
+
+    currentQuizData.forEach((item, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        const feedbackDiv = document.getElementById(`feedback-${index}`);
+        const questionBlock = document.getElementById(`question-${index}`);
+
+        feedbackDiv.style.display = "block";
+
+        if (!selected) unanswered = true;
+
+        if (selected && selected.value === item.answer) {
+            score++;
+            feedbackDiv.innerHTML = `<span class="feedback-title">¡Respuesta Correcta! ✅</span>
+            <span class="feedback-explanation"><strong>📌 Fundamento (PPT):</strong> ${item.explanation}</span>
+            <span class="feedback-deep"><strong>🧠 Análisis Clínico Extra:</strong> ${item.deep_dive}</span>`;
+            feedbackDiv.className = "feedback correct";
+            questionBlock.style.borderColor = "var(--success)";
+        } else {
+            incorrects++;
+            if(topicErrorsGlobal[item.topic]) {
+                topicErrorsGlobal[item.topic]++;
+            } else {
+                topicErrorsGlobal[item.topic] = 1;
+            }
+
+            const userText = selected ? `${selected.value.toUpperCase()}) ${item.options[selected.value]}` : "Se dejó en blanco";
+            const correctText = `${item.answer.toUpperCase()}) ${item.options[item.answer]}`;
+
+            wrongAnswersGlobal.push({
+                q: item.q,
+                week: item.week,
+                userR: userText,
+                correctR: correctText,
+                expl: item.explanation,
+                deep: item.deep_dive
+            });
+
+            feedbackDiv.innerHTML = `<span class="feedback-title">Respuesta Incorrecta ❌</span>
+            Marcaste: <strong>${selected ? selected.value.toUpperCase() : "Nada"}</strong>. La alternativa correcta es la <strong>${item.answer.toUpperCase()}</strong>.
+            <span class="feedback-explanation"><strong>📌 Fundamento (PPT):</strong> ${item.explanation}</span>
+            <span class="feedback-deep"><strong>📚 Fisiología (Profundización):</strong> ${item.deep_dive}</span>`;
+            feedbackDiv.className = "feedback incorrect";
+            questionBlock.style.borderColor = "var(--error)";
+        }
+        
+        const inputs = document.querySelectorAll(`input[name="q${index}"]`);
+        inputs.forEach(input => input.disabled = true);
+    });
+
+    if(unanswered) {
+        alert("Aviso: Has dejado preguntas en blanco. Se contabilizarán como incorrectas.");
+    }
+
+    buildDashboard(score, incorrects, 50);
+}
+
+function buildDashboard(score, incorrects, total) {
+    const percentage = Math.round((score / total) * 100);
+    
+    document.getElementById("stat-correct").innerText = score;
+    document.getElementById("stat-incorrect").innerText = incorrects;
+    document.getElementById("chart-text").innerText = percentage + "%";
+    
+    const chart = document.getElementById("circular-chart");
+    chart.style.setProperty('--percentage', percentage);
+
+    if(percentage >= 75) {
+        chart.style.setProperty('--success', '#059669'); 
+    } else if (percentage >= 50) {
+        chart.style.setProperty('--success', '#ea580c'); 
+    } else {
+        chart.style.setProperty('--success', '#dc2626'); 
+    }
+
+    const ulTopics = document.getElementById("study-topics");
+    ulTopics.innerHTML = "";
+    
+    if (incorrects === 0) {
+        ulTopics.innerHTML = "<li>🎉 ¡Sobresaliente! Tienes un dominio absoluto de todos los módulos. Estás listo para tu evaluación.</li>";
+    } else {
+        let sortedTopics = Object.keys(topicErrorsGlobal).sort((a, b) => topicErrorsGlobal[b] - topicErrorsGlobal[a]);
+        
+        sortedTopics.forEach(topic => {
+            const li = document.createElement("li");
+            li.innerHTML = `<strong>${topic}</strong> (Errores cometidos: ${topicErrorsGlobal[topic]}).`;
+            ulTopics.appendChild(li);
+        });
+    }
+
+    document.getElementById("btn-submit").style.display = "none";
+    const dashboard = document.getElementById("dashboard");
+    dashboard.style.display = "block";
+    
+    window.scrollTo({ top: dashboard.offsetTop - 20, behavior: 'smooth' });
+}
+
+function downloadPDF() {
+    if (wrongAnswersGlobal.length === 0) {
+        alert("¡No hay errores que exportar! Tu rendimiento fue perfecto.");
+        return;
+    }
+
+    const printArea = document.getElementById("print-area");
+    
+    let html = `
+        <div class="print-header">
+            <h1>📋 Informe Médico: Reporte de Errores</h1>
+            <p>Guía de estudio personalizada generada automáticamente.</p>
+        </div>
+    `;
+
+    let currentPrintWeek = "";
+
+    wrongAnswersGlobal.forEach((err, index) => {
+        if (err.week !== currentPrintWeek) {
+            currentPrintWeek = err.week;
+            html += `<div class="print-section"><h2>${currentPrintWeek}</h2></div>`;
+        }
+        
+        html += `
+        <div class="print-card">
+            <div class="print-q">Fallo #${index + 1}: ${err.q}</div>
+            <div class="print-ans" style="color:#b91c1c;"><strong>❌ Tu Selección:</strong> ${err.userR}</div>
+            <div class="print-ans" style="color:#15803d;"><strong>✅ Clave Oficial:</strong> ${err.correctR}</div>
+            
+            <div class="print-box-ppt">
+                <strong>📌 Fundamento del PPT:</strong><br>${err.expl}
+            </div>
+            
+            <div class="print-box-deep">
+                <strong>🧠 Análisis Clínico Extra:</strong><br>${err.deep}
+            </div>
+        </div>
+        `;
+    });
+
+    printArea.innerHTML = html;
+    window.print();
+}
+
+function retryQuiz() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => {
+        initQuiz();
+    }, 400); 
+}
+
+window.addEventListener('DOMContentLoaded', initQuiz);
+</script>
+
+</body>
+</html>
